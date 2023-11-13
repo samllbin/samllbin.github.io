@@ -4,6 +4,31 @@
   
     
     <entry>
+      <title>用hooks实现componentWillMount</title>
+      <link href="/posts/38756/"/>
+      <url>/posts/38756/</url>
+      
+        <content type="html"><![CDATA[<p>​ 如何用 hooks 来实现<strong>componentWillMount</strong>，如果是 componentDidMount 或者 componentDidUpdate 这两个是比较好实现的，直接使用 useEffect 即可实现。(具体关于 react 的生命周期可以看一下之前的 lifeCycle 文章)。</p><p>​ componentWillMount 顾名思义就是组件被挂载之前。</p><h4 id="基于-useState-实现"><a href="#基于-useState-实现" class="headerlink" title="基于 useState 实现"></a>基于 useState 实现</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;useState, useEffect&#125; <span class="keyword">from</span> <span class="string">&#x27;react&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title function_">useComponentWillMount</span>(fun) =&gt; &#123;</span><br><span class="line">    <span class="keyword">const</span> [isBeforePaint, changeStatus] = <span class="title function_">useState</span>(<span class="literal">true</span>);</span><br><span class="line"></span><br><span class="line">    <span class="title function_">useEffect</span>(<span class="function">() =&gt;</span> <span class="title function_">changeStatus</span>(<span class="literal">false</span>), [isBeforePaint]);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(isBeforeCommit) &#123;</span><br><span class="line">        <span class="title function_">fun</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> useComponentWillMount;</span><br></pre></td></tr></table></figure><p>​ 我们传入一个需要在组件挂载之前执行的函数，当该函数式组件开始 beginWork 时就会执行 useComponentWillMount，首先通过 useState 来报存一个变量来标记当前阶段是否在浏览器绘制阶段之前，useEffect 在 commit 阶段的 beforeMutation 或 layout 阶段异步调度，如何进行异步调度的和 scheduler 有关，将 effect 放入宏任务队列。这样做的目的就是防止 fun 会被多次调用（具体可查看 componentWillMount 被标为 unsafe 的原因）。</p><h4 id="基于-useRef-实现"><a href="#基于-useRef-实现" class="headerlink" title="基于 useRef 实现"></a>基于 useRef 实现</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;useRef&#125; <span class="keyword">from</span> <span class="string">&#x27;react&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title function_">useComponentWillMount</span>(fun) =&gt; &#123;</span><br><span class="line">    <span class="keyword">const</span> isBeforePaint = <span class="title function_">useRef</span>(<span class="literal">true</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(isBeforeCommit.<span class="property">current</span>) &#123;</span><br><span class="line">        isBeforeCommit.<span class="property">current</span> = <span class="literal">false</span>;</span><br><span class="line">        <span class="title function_">fun</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> useComponentWillMount;</span><br></pre></td></tr></table></figure><p>​ 这个和基于 useState 的实现大差不差。</p><h4 id="基于-useLayoutEffect-实现"><a href="#基于-useLayoutEffect-实现" class="headerlink" title="基于 useLayoutEffect 实现"></a>基于 useLayoutEffect 实现</h4><p>​ 这个就比较有意思了，先看一下官方给出的定义</p><p><img src="/../img/useLayoutEffect.png"></p><p>大概意思就是 useLayoutEffect 是 useEffect 的一个版本，它的执行时机是浏览器绘制到屏幕之前。</p><p>​ 这个 hook 出现让我们可以在浏览器绘制到屏幕之前去修改一些 dom 的属性，在执行如果在 useEffect 中去操作，由于是异步的，所以就有可能会导致页面的闪烁。知道这些就好做了，当 useLayoutEffect 的第二个参数依赖为空的时候就可以实现 componentWillMount 了。</p><p>​</p><p>​</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> React </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> React </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>React的LifeCycle</title>
       <link href="/posts/62212/"/>
       <url>/posts/62212/</url>
